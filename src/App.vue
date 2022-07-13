@@ -2,7 +2,6 @@
   <div id="app">
     <!-- 路由出口 -->
     <router-view></router-view>
-    <h1>头条</h1>
   </div>
 </template>
 

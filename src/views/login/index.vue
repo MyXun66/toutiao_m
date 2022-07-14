@@ -1,12 +1,15 @@
 <template>
   <div class="login-container">
     <!-- 导航栏 -->
-    <van-nav-bar class="page-nav-bar" title="登录" />
+    <van-nav-bar class="page-nav-bar" title="登录">
+      <!-- 左关闭符号 -->
+      <van-icon slot="left" name="cross" @click="$router.back()"></van-icon>
+    </van-nav-bar>
     <!-- 登录表单 -->
-    <van-form @submit="onSubmit">
+    <van-form @submit="onSubmit" ref="loginForm" validate-trigger="onSubmit">
       <van-field
         v-model="user.mobile"
-        name="手机号"
+        name="mobile"
         placeholder="请输入手机号"
         :rules="userFormRules.mobile"
         type="number"
@@ -15,15 +18,30 @@
       ></van-field>
       <van-field
         v-model="user.code"
-        name="验证码"
+        name="code"
         placeholder="请输入验证码"
         :rules="userFormRules.code"
         maxlength="6"
         ><i slot="left-icon" class="toutiao toutiao-yanzhengma"></i
         ><template #button>
-          <van-button size="small" class="send-sms-btn" round type="default"
-            >获取验证码</van-button
-          >
+          <div class="boxSms">
+            <van-count-down
+              v-if="isCountDownShow"
+              :time="1000 * 60"
+              format="ss s"
+              @finish="isCountDownShow = false"
+            />
+            <van-button
+              v-else
+              size="small"
+              class="send-sms-btn"
+              round
+              type="default"
+              @click="onSendSms"
+              native-type="button"
+              >获取验证码</van-button
+            >
+          </div>
         </template></van-field
       >
       <div class="login-btn-wrap">
@@ -36,7 +54,7 @@
 </template>
 
 <script>
-import { login } from '@/api/user'
+import { login, sendSms } from '@/api/user'
 export default {
   name: 'LoginIndex',
   components: {},
@@ -56,7 +74,8 @@ export default {
           { required: true, message: '验证码不能为空' },
           { pattern: /^\d{6}$/, message: '验证码格式错误' }
         ]
-      }
+      },
+      isCountDownShow: false // 是否展示倒计时
     }
   },
   computed: {},
@@ -76,9 +95,12 @@ export default {
       })
       // 提交数据
       try {
-        const res = await login(user)
-        console.log('登陆成功', res)
+        const { data } = await login(user)
+        // console.log('登陆成功')
         this.$toast.success('登陆成功')
+        this.$store.commit('setUser', data.data)
+        // 登录成功跳转回原来页面
+        this.$router.back()
       } catch (error) {
         if (error.response.status === 400) {
           this.$toast.fail('手机号或验证码错误')
@@ -86,7 +108,29 @@ export default {
           this.$toast.fail('登陆失败,请稍后重试')
         }
       }
-      // 根据响应进行操作
+    },
+    async onSendSms() {
+      // 校验手机号
+      try {
+        await this.$refs.loginForm.validate('mobile')
+      } catch (error) {
+        return console.log('验证失败', error)
+      }
+      // 显示倒计时
+      this.isCountDownShow = true
+      // 请求发送验证码
+      try {
+        await sendSms(this.user.mobile)
+        this.$toast('发送成功')
+      } catch (error) {
+        this.isCountDownShow = false
+        // console.log('发送失败', error)
+        if (error.response.status === 420) {
+          this.$toast('发送太频繁,请稍后再试')
+        } else {
+          this.$toast('发送失败,请稍后再试')
+        }
+      }
     }
   }
 }
@@ -98,7 +142,7 @@ export default {
     font-size: 37px;
   }
   .send-sms-btn {
-    width: 160px;
+    width: 157px;
     height: 46px;
     line-height: 46px;
     background-color: #ededed;
@@ -110,6 +154,9 @@ export default {
   .login-btn {
     background-color: #6db4fb;
     border: none;
+  }
+  .boxSms {
+    height: 50px;
   }
 }
 </style>

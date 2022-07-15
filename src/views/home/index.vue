@@ -1,7 +1,7 @@
 <template>
   <div class="home-container">
     <!-- 导航栏 -->
-    <van-nav-bar class="page-nav-bar">
+    <van-nav-bar class="page-nav-bar" fixed>
       <van-button
         slot="title"
         type="info"
@@ -17,7 +17,14 @@
       通过 animated 属性可以开启切换标签内容时的转场动画。
      -->
     <van-tabs class="channel-tabs" v-model="active" animated swipeable>
-      <van-tab v-for="channel in channels" :key="channel.id" :title="channel.name">{{channel.name}}的内容</van-tab>
+      <van-tab
+        v-for="channel in channels"
+        :key="channel.id"
+        :title="channel.name"
+      >
+        <!-- 文章列表 -->
+        <article-list :channel="channel" />
+      </van-tab>
       <!-- 占位 -->
       <div slot="nav-right" class="placeholder"></div>
       <!-- 汉堡按钮 -->
@@ -30,10 +37,15 @@
 
 <script>
 import { getUserChannel } from '@/api/user'
+// 1加载列表组件
+import ArticleList from './components/article-list.vue'
 
 export default {
   name: 'HomeIndex',
-  components: {},
+  components: {
+    // 2 注册列表组件
+    ArticleList
+  },
   props: {},
   data() {
     return {
@@ -63,6 +75,8 @@ export default {
 
 <style scoped lang="less">
 .home-container {
+  padding-top: 174px;
+  padding-bottom: 100px;
   /deep/ .van-nav-bar__title {
     max-width: unset !important;
     // max-width: none;
@@ -80,6 +94,11 @@ export default {
 
   /deep/ .channel-tabs {
     .van-tabs__wrap {
+      position: fixed;
+      top: 92px;
+      z-index: 1;
+      left: 0;
+      right: 0;
       height: 82px;
     }
     .van-tab {

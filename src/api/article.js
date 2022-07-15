@@ -3,7 +3,7 @@
  */
 
 import request from '@/utils/request'
-// 请求获取文章列表
+// 请求获取用户文章列表
 export const getArticles = (params) => {
   return request({
     method: 'GET',

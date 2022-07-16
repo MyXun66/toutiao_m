@@ -55,6 +55,8 @@ import { getUserChannel } from '@/api/user'
 import ArticleList from './components/article-list.vue'
 // 加频道列表编辑载弹出层
 import ChannelEdit from './components/channelEdit.vue'
+import { mapState } from 'vuex'
+import { getItem } from '@/utils/storage'
 
 export default {
   name: 'HomeIndex',
@@ -71,7 +73,9 @@ export default {
       isChannelEditShow: false // 控制编辑频道弹出层显示状态
     }
   },
-  computed: {},
+  computed: {
+    ...mapState(['user'])
+  },
   watch: {},
   created() {
     // 加载列表数据
@@ -81,8 +85,23 @@ export default {
   methods: {
     async loadChannels() {
       try {
-        const { data } = await getUserChannel()
-        this.channels = data.data.channels
+        let channelss = []
+        // const { data } = await getUserChannel()
+        // this.channels = data.data.channels
+        if (this.user) {
+          const { data } = await getUserChannel()
+          channelss = data.data.channels
+        } else {
+          const localChannels = getItem('TOUTIAO_CHANNELS')
+          if (localChannels) {
+            channelss = localChannels
+          } else {
+            const { data } = await getUserChannel()
+            channelss = data.data.channels
+          }
+        }
+
+        this.channels = channelss
       } catch (err) {
         this.$toast('获取频道数据失败')
       }

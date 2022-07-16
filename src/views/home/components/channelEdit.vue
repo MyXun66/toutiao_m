@@ -168,7 +168,6 @@ export default {
       if (this.user) {
         // console.log(this.user)
         // 删除userdata中对应的数据
-        console.log(channel.id, index)
         this.userData = this.userData.filter((x) => {
           return x.id !== channel.id
         })

@@ -47,6 +47,13 @@ const routes = [
         component: () => import('@/views/my/index.vue')
       }
     ]
+  },
+  {
+    path: '/article/:articleId',
+    name: 'article',
+    component: () => import('@/views/articles/index.vue'),
+    // 开启props传参，将路由参数映射到组件的props中
+    props: true
   }
 ]
 

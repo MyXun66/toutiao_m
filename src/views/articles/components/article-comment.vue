@@ -9,53 +9,46 @@
       :error.sync="err"
       error-text="加载失败,请点击重试"
     >
-      <van-cell v-for="(item, index) in list" :key="index">
-        <van-image
-          slot="icon"
-          round
-          width="30"
-          height="30"
-          style="margin-right: 10px"
-          :src="item.aut_photo"
-        />
-        <span style="color: #466b9d" slot="title">{{ item.aut_name }}</span>
-        <div slot="label">
-          <p style="color: #363636">{{ item.content }}</p>
-          <p>
-            <span style="margin-right: 10px">{{
-              item.pubdate | relativeTime
-            }}</span>
-            <van-button size="mini" type="default">回复</van-button>
-          </p>
-        </div>
-        <van-icon slot="right-icon" name="like-o" />
-      </van-cell>
+      <comment-item
+        v-for="(item, index) in list"
+        :key="index"
+        :comment="item"
+        @updateComment="updateComment"
+      ></comment-item>
     </van-list>
     <!-- 评论列表 -->
 
     <!-- 发布评论 -->
-    <van-cell-group class="publish-wrap">
+    <!-- <van-cell-group class="publish-wrap">
       <van-field clearable placeholder="请输入评论内容">
         <van-button slot="button" size="mini" type="info">发布</van-button>
       </van-field>
-    </van-cell-group>
+    </van-cell-group> -->
     <!-- /发布评论 -->
   </div>
 </template>
 
 <script>
 import { getComments } from '@/api/comment'
+import CommentItem from './comment-item'
 export default {
   name: 'ArticleComment',
+  components: {
+    CommentItem
+  },
   props: {
     source: {
       type: [Number, String, Object],
       required: true
+    },
+    xlist: {
+      type: Array,
+      default: () => []
     }
   },
   data() {
     return {
-      list: [], // 评论列表
+      list: this.xlist, // 评论列表
       loading: false, // 上拉加载更多的 loading
       finished: false, // 是否加载结束
       offset: null, // 获取下页数据的标记
@@ -66,6 +59,7 @@ export default {
   created() {
     this.onLoad()
   },
+  watch: {},
   methods: {
     async onLoad() {
       try {
@@ -95,6 +89,16 @@ export default {
         this.err = true
         this.loading = false
       }
+    },
+    // 修改结果（供子组件使用）
+    updateComment(id, value) {
+      this.list.forEach((item) => {
+        if (item.com_id === id) {
+          item.like_count = item.like_count + value
+          item.is_liking = !item.is_liking
+        }
+      })
+      console.log(this.list)
     }
   }
 }

@@ -74,11 +74,10 @@
         <article-comment
           :source="article.art_id"
           @onload-success="totalCommentCount = $event.total_count"
+          :xlist="commentList"
         />
-        <!-- /文章评论 -->
       </div>
       <!-- /加载完成-文章详情 -->
-
       <!-- 加载失败：404 -->
       <div v-else-if="errStatus === 404" class="error-wrap">
         <van-icon name="failure" />
@@ -94,10 +93,23 @@
       </div>
       <!-- /加载失败：其它未知错误（例如网络原因或服务端异常） -->
     </div>
+    <!-- 发表评论 -->
+    <van-popup class="pop-show" v-model="isPostShow" position="button"
+      ><comment-post
+        :target="article.art_id"
+        @post-success="onPostSuccess($event)"
+      ></comment-post>
+    </van-popup>
+    <!-- /文章评论 -->
 
     <!-- 底部区域 -->
     <div class="article-bottom">
-      <van-button class="comment-btn" type="default" round size="small"
+      <van-button
+        class="comment-btn"
+        type="default"
+        round
+        size="small"
+        @click="isPostShow = true"
         >写评论</van-button
       >
       <van-icon name="comment-o" :info="this.totalCommentCount" color="#777" />
@@ -129,10 +141,12 @@ import {
 } from '@/api/article'
 import { addFollow, deleteFollow } from '@/api/user'
 import ArticleComment from './components/article-comment'
+import CommentPost from './components/comment-post'
 export default {
   name: 'ArticleIndex',
   components: {
-    ArticleComment
+    ArticleComment,
+    CommentPost
   },
   props: {
     articleId: {
@@ -147,7 +161,10 @@ export default {
       loading: true,
       errStatus: 0,
       followLoading: false,
-      totalCommentCount: 0
+      totalCommentCount: 0,
+      // 控制评论弹出显示状态
+      isPostShow: false,
+      commentList: []
     }
   },
   computed: {},
@@ -248,6 +265,13 @@ export default {
         console.log(err)
         this.$toast.fail('操作失败')
       }
+    },
+    onPostSuccess(data) {
+      // 关闭弹出层
+      this.isPostShow = false
+      // console.log(data)
+      // this.loadArticle()
+      this.commentList.unshift(data.new_obj)
     }
   }
 }
@@ -272,6 +296,7 @@ export default {
     background-color: #fff;
   }
   .article-detail {
+    // padding-bottom: 100px;--------------------------------------------------------
     .article-title {
       font-size: 40px;
       padding: 50px 32px;
@@ -345,6 +370,11 @@ export default {
     }
   }
 
+  .pop-show {
+    position: flex;
+    bottom: 0;
+    width: 100%;
+  }
   .article-bottom {
     position: fixed;
     left: 0;

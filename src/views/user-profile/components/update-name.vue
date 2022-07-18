@@ -46,7 +46,7 @@ export default {
   methods: {
     async onConfirm() {
       this.$toast.loading({
-        message: '保持中...',
+        message: '保存中...',
         forbidClick: true, // 禁止背景点击
         duration: 0 // 持续时间
       })
